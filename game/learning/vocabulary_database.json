@@ -1,0 +1,23 @@
+[
+  {
+    "id": "farm_001",
+    "word": "carrot",
+    "meaning": "cà rốt",
+    "category": "farm",
+    "level": 1
+  },
+  {
+    "id": "farm_002",
+    "word": "water",
+    "meaning": "tưới nước",
+    "category": "action",
+    "level": 1
+  },
+  {
+    "id": "farm_003",
+    "word": "harvest",
+    "meaning": "thu hoạch",
+    "category": "farm",
+    "level": 1
+  }
+]

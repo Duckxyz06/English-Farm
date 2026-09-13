@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="Momo" type="CharacterBody2D"]
+
+[node name="Sprite" type="Sprite2D" parent="."]
+
+[node name="Collision" type="CollisionShape2D" parent="."]

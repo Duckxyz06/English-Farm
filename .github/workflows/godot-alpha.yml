@@ -14,6 +14,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup export templates
+        run: |
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          if [ -d /root/.local/share/godot/export_templates/4.3.stable ]; then
+            cp -r /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
+          elif [ -d /root/.local/share/godot/templates/4.3.stable ]; then
+            cp -r /root/.local/share/godot/templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
+          else
+            echo "Godot export templates were not found in the CI image."
+            exit 1
+          fi
+
       - name: Import and parse project
         run: godot --headless --path . --editor --quit
 

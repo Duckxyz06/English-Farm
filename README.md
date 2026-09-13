@@ -4,11 +4,18 @@ Game nông trại học tiếng Anh với Momo, chú mèo cam trắng đeo khăn
 
 ## Chơi trên Windows
 
+**[Tải bản Windows đã kiểm thử](https://github.com/Duckxyz06/English-Farm/actions/runs/34790434690/artifacts/10328225832)** · [Kết quả kiểm thử](https://github.com/Duckxyz06/English-Farm/actions/runs/34790434690) · [PR #1](https://github.com/Duckxyz06/English-Farm/pull/1)
+
 1. Mở [GitHub Actions — Godot Visual Demo](https://github.com/Duckxyz06/English-Farm/actions/workflows/godot-alpha.yml), chọn lượt chạy thành công của nhánh `codex/visual-farm-demo`.
 2. Tải artifact **EnglishFarm-Windows-Visual-Demo** ở cuối trang lượt chạy. GitHub yêu cầu đăng nhập để tải artifact.
 3. Giải nén toàn bộ gói, mở **EnglishFarm.exe** và giữ **EnglishFarm.pck** cùng thư mục.
 
 Hướng dẫn đầy đủ có trong [PLAY_DEMO_VI.txt](docs/PLAY_DEMO_VI.txt) và tệp HUONG_DAN.txt đi kèm gói Windows.
+Nếu artifact hết hạn, chạy lại workflow để tạo gói mới.
+
+![Momo ở nông trại — ảnh chụp trực tiếp từ Godot](docs/screenshots/farming.png)
+
+[Xem Momo trước nhà](docs/screenshots/cottage.png). Hai ảnh này và sáu màn hình khác nằm trong artifact kiểm chứng; chúng là ảnh gameplay thật.
 
 ## Có trong bản demo
 

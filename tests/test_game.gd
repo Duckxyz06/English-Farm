@@ -15,6 +15,9 @@ func check(condition: bool, message: String) -> void:
 func run() -> void:
     var scene = load("res://game/scenes/Main.tscn").instantiate()
     scene.persistence_enabled = false
+    # Gameplay assertions intentionally execute many actions in one frame.
+    # Exercise audio separately with real frames so the mixer can process it.
+    scene.state.sound_enabled = false
     root.add_child(scene)
     await process_frame
     scene.set_process(false)
@@ -134,6 +137,15 @@ func run() -> void:
     for suffix in ["",".bak",".tmp"]:
         if FileAccess.file_exists(save+suffix):
             DirAccess.remove_absolute(ProjectSettings.globalize_path(save+suffix))
+    scene.toggle_sound()
+    await create_timer(0.1).timeout
+    check(scene.music.playing,"Enabling sound starts music")
+    scene.play_sound("plant")
+    await create_timer(0.1).timeout
+    check(scene.effects.playing,"Farm action plays its sound")
+    scene.toggle_sound()
+    await create_timer(0.1).timeout
+    check(not scene.music.playing and not scene.effects.playing,"Muting stops music and effects")
     scene.stop_audio()
     await create_timer(0.15).timeout
     scene.queue_free()

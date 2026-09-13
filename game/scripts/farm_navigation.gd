@@ -34,7 +34,7 @@ func _init() -> void:
     for y in range(grid.region.size.y):
         for x in range(grid.region.size.x):
             var cell := Vector2i(x,y)
-            grid.set_point_solid(cell, not is_walkable(grid.get_point_position(cell)))
+            grid.set_point_solid(cell, not is_walkable(grid.get_point_position(cell),12.0))
             if not grid.is_point_solid(cell):
                 paths.add_point(_id(cell),grid.get_point_position(cell))
     # A grid can connect two safe centers across a concave path edge. Validate
@@ -47,7 +47,7 @@ func _init() -> void:
             for offset in [Vector2i(1,0),Vector2i(0,1),Vector2i(1,1),Vector2i(-1,1)]:
                 var neighbor: Vector2i = cell+offset
                 if grid.region.has_point(neighbor) and not grid.is_point_solid(neighbor):
-                    if can_travel(grid.get_point_position(cell),grid.get_point_position(neighbor)):
+                    if can_travel(grid.get_point_position(cell),grid.get_point_position(neighbor),12.0):
                         paths.connect_points(_id(cell),_id(neighbor))
 
 func _id(cell: Vector2i) -> int:
@@ -71,16 +71,16 @@ func _inside(point: Vector2) -> bool:
             return true
     return false
 
-func is_walkable(point: Vector2) -> bool:
-    for offset in [Vector2.ZERO,Vector2(8,0),Vector2(-8,0),Vector2(0,8),Vector2(0,-8)]:
+func is_walkable(point: Vector2, clearance: float = 8.0) -> bool:
+    for offset in [Vector2.ZERO,Vector2(clearance,0),Vector2(-clearance,0),Vector2(0,clearance),Vector2(0,-clearance)]:
         if not _inside(point + offset):
             return false
     return true
 
-func can_travel(from: Vector2, to: Vector2) -> bool:
-    var steps := maxi(1,ceili(from.distance_to(to)/6.0))
+func can_travel(from: Vector2, to: Vector2, clearance: float = 8.0) -> bool:
+    var steps := maxi(1,ceili(from.distance_to(to)/1.5))
     for i in range(steps+1):
-        if not is_walkable(from.lerp(to,float(i)/steps)):
+        if not is_walkable(from.lerp(to,float(i)/steps),clearance):
             return false
     return true
 

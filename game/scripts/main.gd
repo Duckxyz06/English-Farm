@@ -323,4 +323,14 @@ func save_progress() -> void:
 func _notification(what: int) -> void:
     if what==NOTIFICATION_WM_CLOSE_REQUEST:
         save_progress()
+        stop_audio()
+        await get_tree().create_timer(0.15).timeout
         get_tree().quit()
+
+func stop_audio() -> void:
+    if music != null:
+        music.stop()
+        music.stream = null
+    if effects != null:
+        effects.stop()
+        effects.stream = null

@@ -40,13 +40,13 @@ func run() -> void:
             check(scene.navigation.can_travel(previous,point),"No corner clipping to "+str(goal)+" at "+str(point))
             previous = point
         check(previous.distance_to(goal)<1.0,"Exact destination "+str(goal))
-    scene.player.position = scene.SPAWN
-    scene.player.walk_to(scene.NPC_POSITIONS["lily"])
-    for i in range(2400):
-        scene.player._physics_process(0.04)
-        if scene.player.route.is_empty():
-            break
-    check(scene.player.position.distance_to(scene.NPC_POSITIONS["lily"])<1.0,"Momo really follows the path")
+        scene.player.position = scene.SPAWN
+        scene.player.walk_to(goal)
+        for i in range(2400):
+            scene.player._physics_process(0.04)
+            if scene.player.route.is_empty():
+                break
+        check(scene.player.position.distance_to(goal)<1.0,"Momo reaches %s; stopped at %s" % [goal,scene.player.position])
     scene.lesson()
     var locked_at: Vector2 = scene.player.position
     Input.action_press("move_right")
@@ -134,6 +134,8 @@ func run() -> void:
     for suffix in ["",".bak",".tmp"]:
         if FileAccess.file_exists(save+suffix):
             DirAccess.remove_absolute(ProjectSettings.globalize_path(save+suffix))
+    scene.stop_audio()
+    await create_timer(0.15).timeout
     scene.queue_free()
     await process_frame
     if failures.is_empty():

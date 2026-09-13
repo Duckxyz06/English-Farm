@@ -55,7 +55,8 @@ func _physics_process(delta: float) -> void:
         while budget>0.01 and not route.is_empty():
             var target := route[0]
             var distance := global_position.distance_to(target)
-            if distance<0.5:
+            if distance<0.001:
+                global_position = target
                 route.remove_at(0)
                 continue
             var step := minf(distance,budget)
@@ -64,6 +65,7 @@ func _physics_process(delta: float) -> void:
                 break
             budget -= step
             if step>=distance:
+                global_position = target
                 route.remove_at(0)
     var motion := global_position-previous
     velocity = motion/maxf(delta,0.001)

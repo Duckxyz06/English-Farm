@@ -29,5 +29,9 @@ func capture() -> void:
     scene.ui.close_dialogue()
     scene.shop()
     await shot(scene,"test-output/04-shop.png",Vector2(2380,680))
+    scene.stop_audio()
+    await create_timer(0.15).timeout
+    scene.queue_free()
+    await process_frame
     print("ENGLISH_FARM_SCREENSHOTS_PASSED")
     quit(0)

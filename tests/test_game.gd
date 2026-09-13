@@ -68,11 +68,13 @@ func run() -> void:
     scene.ui.close_dialogue()
     check(not scene.player.locked,"Closing dialogue releases movement")
     scene.player.position = scene.SPAWN
-    scene.player.walk_to(scene.NPC_POSITIONS["mia"])
+    scene.click_world(scene.NPC_POSITIONS["mia"])
     Input.action_press("move_right")
     scene.player._physics_process(0.04)
+    scene._process(0.04)
     Input.action_release("move_right")
     check(scene.player.route.is_empty(),"Keyboard cancels click route")
+    check(scene.pending_npc.is_empty() and scene.pending_plot==-1,"Keyboard cancels pending interaction")
 
     var state := State.new()
     for plot in range(3):

@@ -40,7 +40,7 @@ jobs:
       - name: Test gameplay in Godot
         run: |
           set -o pipefail
-          timeout 120 godot --headless --path . --script tests/test_game.gd 2>&1 | tee test.log
+          timeout 120 godot --headless --verbose --path . --script tests/test_game.gd 2>&1 | tee test.log
           grep -q 'ENGLISH_FARM_TESTS_PASSED' test.log
           ! grep -Eq 'SCRIPT ERROR:|Parse Error:|ERROR:' test.log
 
@@ -60,6 +60,7 @@ jobs:
 
       - name: Export Windows demo
         run: |
+          set -o pipefail
           mkdir -p build/windows
           godot --headless --path . --export-release "Windows Desktop" "build/windows/EnglishFarm.exe" 2>&1 | tee export.log
           ! grep -Eq 'SCRIPT ERROR:|Parse Error:|ERROR:' export.log

@@ -1,72 +1,53 @@
 # English Farm 🌱
 
-Educational farming game inspired by cozy farming RPGs, combining exploration, farming and English learning.
+Game nông trại học tiếng Anh với Momo, chú mèo cam trắng đeo khăn xanh. Bản Visual Demo mở rộng hình ảnh từ 5 bảng tham chiếu trong [image/](image/) và đưa chúng vào gameplay Godot.
 
-## Alpha 0.1 playable prototype
+## Chơi trên Windows
 
-The repository now contains a runnable Godot prototype with:
+1. Mở [GitHub Actions — Godot Visual Demo](https://github.com/Duckxyz06/English-Farm/actions/workflows/godot-alpha.yml), chọn lượt chạy thành công của nhánh `codex/visual-farm-demo`.
+2. Tải artifact **EnglishFarm-Windows-Visual-Demo** ở cuối trang lượt chạy. GitHub yêu cầu đăng nhập để tải artifact.
+3. Giải nén toàn bộ gói, mở **EnglishFarm.exe** và giữ **EnglishFarm.pck** cùng thư mục.
 
-- Momo as the controllable orange-and-white cat with a green scarf
-- A large cozy farm world with house, fields, paths, trees, pond and learning garden
-- Camera follow
-- Walkable world boundaries and blocked buildings/pond areas
-- Lily NPC interaction
-- First English vocabulary quest: `CARROT = CÀ RỐT`
-- Coin reward after answering correctly
-- In-game HUD and interaction hints
+Hướng dẫn đầy đủ có trong [PLAY_DEMO_VI.txt](docs/PLAY_DEMO_VI.txt) và tệp HUONG_DAN.txt đi kèm gói Windows.
 
-### Controls
+## Có trong bản demo
 
-- `W A S D` — move Momo
-- `E` — interact / close dialogue
-- `1` / `2` — answer Lily's English question
+- Nông trại mùa xuân 3072×2048 với nhà Momo ở phía tây nam, trường, kho, ruộng, hồ và lối đi.
+- Bộ hình Momo 16 khung cho bốn hướng; Lily, Tom, Mia mỗi người hai tư thế; bộ 16 hình cây và vật phẩm.
+- Đi bằng bàn phím hoặc bấm chuột, tìm đường tránh công trình/hồ, camera theo nhân vật và bản đồ nhỏ có thể bấm.
+- Lily dạy 10 từ: mỗi đáp án đúng mới nhận 2 XP; hoàn thành bài học nhận 50 xu một lần.
+- Tám luống: gieo → tưới → đợi 12 giây → thu hoạch. Tom nhận 3 cà rốt và thưởng 30 xu, 20 XP một lần.
+- Kho 60 chỗ, nâng lên 100 với 500 xu; mua hạt giống, bán cà rốt; đổi 10 xu lấy 1 ngọc và mua mũ với 5 ngọc.
+- Tự lưu tiến độ, có bản sao lưu; nhạc nền và bốn hiệu ứng âm thanh mới, có nút tắt tiếng.
 
-## Run in Godot
+## Điều khiển
 
-1. Install Godot 4.3 or newer.
-2. Clone or download this repository.
-3. Open `project.godot` in Godot.
-4. Press **F6/F5** or click **Run Project**.
+| Thao tác | Điều khiển |
+| --- | --- |
+| Di chuyển, hủy hành trình bằng chuột | W A S D |
+| Chọn điểm đến / NPC / luống cây | Chuột trái, cả trên bản đồ nhỏ |
+| Tương tác, tiếp tục sau đáp án đúng | E |
+| Chọn đáp án hoặc thao tác cửa hàng | 1–5 |
+| Mở kho / đóng cửa sổ | I / Esc |
+| Bật tắt âm thanh / toàn màn hình | M / F11 |
 
-The main scene is `game/scenes/Main.tscn`.
+Momo bắt đầu trước nhà. Hãy gặp Lily trước trường mái xanh, vào ruộng từ cổng phía dưới, rồi mang cà rốt đến Tom ở phía dưới bên phải ruộng. Mia đứng trước kho mái đỏ ở phía đông bắc.
 
-## Automatic Windows build
+## Phát triển và kiểm thử
 
-GitHub Actions configuration is included at `.github/workflows/godot-alpha.yml`.
-When Actions are enabled for the repository, pushes to `main` run a Godot headless smoke test and export a Windows artifact named:
+Mở `project.godot` bằng **Godot 4.3 stable** và nhấn F5. Scene chính là `game/scenes/Main.tscn`; các module đang dùng nằm trong `game/scripts/`.
 
-`EnglishFarm-Windows-Alpha`
-
-## Visual direction
-
-The final asset target remains:
-
-- pixel-art cozy farming style
-- Momo: orange-and-white cat, green leaf scarf
-- wooden/cream/leaf UI language
-- warm natural palette
-
-The current Alpha uses procedural pixel-style shapes so gameplay can be tested before the final sprite sheet and tileset are integrated.
-
-## Project structure
-
-```text
-project.godot
-export_presets.cfg
-game/
-  scenes/
-  scripts/
-  assets/
-data/
-docs/
-scripts/
-ui/
+```sh
+godot --headless --path . --editor --quit
+godot --headless --path . --script tests/test_game.gd
 ```
 
-## Next milestones
+Workflow kiểm tra import và gameplay, chụp màn hình thật bằng Godot với màn hình ảo, rồi mới xuất Windows. Artifact **EnglishFarm-Verification** chứa log và ảnh chụp. Kiểm thử bao gồm đường đi đến cả ba NPC/tám luống, khóa di chuyển khi hội thoại, chống nhận thưởng lặp, mua bán khi thiếu tiền/đầy kho và khôi phục bản lưu hỏng.
 
-- replace procedural Momo with final sprite sheet and animations
-- replace procedural environment with approved tilemap assets
-- expand farming interactions
-- add inventory UI and more quests
-- save/load system
+Chi tiết nguồn ảnh, atlas và âm thanh: [VISUAL_DEMO_ASSETS.md](docs/VISUAL_DEMO_ASSETS.md). Nhạc có thể tái tạo bằng `python tools/compose_audio.py` (cần NumPy).
+
+## Phạm vi tiếp theo
+
+Demo hiện có một khu nông trại, một loại cây và một bài học 10 từ. Chuyển mùa, vùng rừng/núi/biển/đảo, nội thất, nhiều cây trồng và ghi âm/chấm phát âm vẫn là các mốc tiếp theo. Ảnh mới theo phong cách và nhận diện của ảnh tham chiếu; không phải bản sao trùng từng pixel.
+
+Các báo cáo Prototype/Alpha cũ trong docs là lịch sử dự án; README này mô tả bản Visual Demo.

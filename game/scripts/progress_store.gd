@@ -6,8 +6,12 @@ static func read_save(path: String) -> Dictionary:
     var file := FileAccess.open(path,FileAccess.READ)
     if file == null or file.get_length()>65536:
         return {}
-    var data: Variant = JSON.parse_string(file.get_as_text())
-    return data if data is Dictionary else {}
+    var parser := JSON.new()
+    var error := parser.parse(file.get_as_text())
+    file.close()
+    if error != OK or not parser.data is Dictionary:
+        return {}
+    return parser.data
 
 static func write_save(path: String, data: Dictionary) -> bool:
     var temporary := path+".tmp"

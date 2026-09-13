@@ -95,6 +95,9 @@ func _process(delta: float) -> void:
         save_progress()
     if ui.dialogue.visible:
         return
+    if Input.get_vector("move_left","move_right","move_up","move_down").length_squared()>0.01:
+        pending_npc = ""
+        pending_plot = -1
     if not pending_npc.is_empty() and player.position.distance_to(NPC_POSITIONS[pending_npc])<105:
         interact_npc(pending_npc)
         return

@@ -6,6 +6,7 @@ const CELL := 20.0
 var regions: Array[PackedVector2Array] = []
 var blocked: Array[Rect2] = []
 var grid := AStarGrid2D.new()
+var paths := AStar2D.new()
 
 func _init() -> void:
     # Coordinates were traced against farm_spring.png (1536 x 1024).
@@ -34,6 +35,23 @@ func _init() -> void:
         for x in range(grid.region.size.x):
             var cell := Vector2i(x,y)
             grid.set_point_solid(cell, not is_walkable(grid.get_point_position(cell)))
+            if not grid.is_point_solid(cell):
+                paths.add_point(_id(cell),grid.get_point_position(cell))
+    # A grid can connect two safe centers across a concave path edge. Validate
+    # each entire connection using the same footprint as actual movement.
+    for y in range(grid.region.size.y):
+        for x in range(grid.region.size.x):
+            var cell := Vector2i(x,y)
+            if grid.is_point_solid(cell):
+                continue
+            for offset in [Vector2i(1,0),Vector2i(0,1),Vector2i(1,1),Vector2i(-1,1)]:
+                var neighbor: Vector2i = cell+offset
+                if grid.region.has_point(neighbor) and not grid.is_point_solid(neighbor):
+                    if can_travel(grid.get_point_position(cell),grid.get_point_position(neighbor)):
+                        paths.connect_points(_id(cell),_id(neighbor))
+
+func _id(cell: Vector2i) -> int:
+    return cell.y*grid.region.size.x+cell.x
 
 func _polygon(points: Array) -> void:
     var polygon := PackedVector2Array()
@@ -86,7 +104,7 @@ func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
     var end := _nearest(to,false)
     if start.x < 0 or end.x < 0:
         return PackedVector2Array()
-    var route := grid.get_point_path(start,end)
+    var route := paths.get_point_path(_id(start),_id(end))
     if not route.is_empty() and can_travel(route[route.size()-1],to):
         route.append(to)
     return route

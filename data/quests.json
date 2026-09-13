@@ -1,0 +1,21 @@
+[
+  {
+    "id": "first_english_lesson",
+    "title": "Bài học đầu tiên",
+    "description": "Learn 10 basic English words",
+    "type": "vocabulary",
+    "reward": {
+      "coin": 50,
+      "xp": 20
+    }
+  },
+  {
+    "id": "farm_carrot",
+    "title": "Collect carrots",
+    "description": "Collect three carrots",
+    "type": "farming",
+    "reward": {
+      "coin": 30
+    }
+  }
+]

@@ -88,7 +88,7 @@ func _draw() -> void:
     # Soft grass checker pattern for a pixel-art feel.
     for y in range(0, int(WORLD_SIZE.y), 64):
         for x in range(0, int(WORLD_SIZE.x), 64):
-            if ((x / 64) + (y / 64)) as int % 2 == 0:
+            if (int(x / 64) + int(y / 64)) % 2 == 0:
                 draw_rect(Rect2(x, y, 64, 64), Color("#94d56c"))
 
     # Dirt paths.

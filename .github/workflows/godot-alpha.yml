@@ -1,0 +1,29 @@
+name: Godot Alpha Build
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  smoke-and-build:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Import and parse project
+        run: godot --headless --path . --editor --quit
+
+      - name: Export Windows build
+        run: |
+          mkdir -p build/windows
+          godot --headless --path . --export-release "Windows Desktop" "build/windows/EnglishFarm.exe"
+
+      - name: Upload Windows alpha
+        uses: actions/upload-artifact@v4
+        with:
+          name: EnglishFarm-Windows-Alpha
+          path: build/windows/

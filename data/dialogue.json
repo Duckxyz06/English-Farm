@@ -1,0 +1,15 @@
+{
+  "teacher_cat": {
+    "name": "Lily",
+    "intro": "Hello Momo! Let's learn English together!",
+    "lessons": [
+      "Hello",
+      "Thank you",
+      "I like apples"
+    ]
+  },
+  "shop_cat": {
+    "name": "Tom",
+    "intro": "Welcome to my shop!"
+  }
+}

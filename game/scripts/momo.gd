@@ -1,51 +1,77 @@
 extends CharacterBody2D
+@export var speed := 310.0
+var navigation: RefCounted
+var visual: AnimatedSprite2D
+var hat: Sprite2D
+var direction := "down"
+var locked := false
+var route := PackedVector2Array()
 
-@export var speed := 260.0
-var facing := Vector2.DOWN
+func configure(art: RefCounted, nav: RefCounted) -> void:
+    navigation = nav
+    visual = art.animated("momo",{"walk_down":[0,1,2,3],"walk_left":[4,5,6,7],"walk_right":[8,9,10,11],"walk_up":[12,13,14,15],"idle_down":[0],"idle_left":[4],"idle_right":[8],"idle_up":[12]},86.0)
+    add_child(visual)
+    visual.play("idle_down")
+    hat = art.sprite("items",14,47.0)
+    hat.position = Vector2(0,-67)
+    hat.visible = false
+    add_child(hat)
+    $Camera2D.limit_right = 3072
+    $Camera2D.limit_bottom = 2048
 
-func _ready() -> void:
-    queue_redraw()
+func walk_to(target: Vector2) -> void:
+    if not locked and navigation != null:
+        route = navigation.find_path(global_position,target)
+
+func stop() -> void:
+    route.clear()
+    velocity = Vector2.ZERO
+    if visual != null:
+        visual.play("idle_"+direction)
+
+func _move(displacement: Vector2, slide: bool) -> bool:
+    if navigation.can_travel(global_position,global_position+displacement):
+        global_position += displacement
+        return true
+    if slide:
+        for axis in [Vector2(displacement.x,0),Vector2(0,displacement.y)]:
+            if navigation.can_travel(global_position,global_position+axis):
+                global_position += axis
+    return false
 
 func _physics_process(delta: float) -> void:
-    var direction := Vector2(
-        Input.get_axis("move_left", "move_right"),
-        Input.get_axis("move_up", "move_down")
-    )
-
-    if direction.length() > 0.05:
-        direction = direction.normalized()
-        facing = direction
-
-    velocity = direction * speed
-    var next_position := global_position + velocity * delta
-
-    var parent_node := get_parent()
-    if parent_node.has_method("is_walkable") and parent_node.is_walkable(next_position):
-        global_position = next_position
-
-    queue_redraw()
-
-func _draw() -> void:
-    # Pixel-art orange/white cat with green scarf, matching the project visual direction.
-    draw_rect(Rect2(-22, -30, 44, 46), Color("#d98943"))
-    draw_rect(Rect2(-17, -43, 13, 18), Color("#d98943"))
-    draw_rect(Rect2(4, -43, 13, 18), Color("#d98943"))
-
-    draw_rect(Rect2(-14, -24, 28, 24), Color("#fff0d2"))
-    draw_rect(Rect2(-13, -18, 7, 7), Color("#403630"))
-    draw_rect(Rect2(6, -18, 7, 7), Color("#403630"))
-    draw_rect(Rect2(-3, -8, 6, 5), Color("#8f5e4c"))
-
-    # Green scarf and leaf badge.
-    draw_rect(Rect2(-25, 5, 50, 12), Color("#4f9a55"))
-    draw_rect(Rect2(5, 14, 12, 18), Color("#3f7f45"))
-    draw_rect(Rect2(-4, 7, 8, 8), Color("#d9f0a7"))
-
-    # Body and paws.
-    draw_rect(Rect2(-18, 16, 36, 31), Color("#d98943"))
-    draw_rect(Rect2(-17, 38, 13, 14), Color("#fff0d2"))
-    draw_rect(Rect2(4, 38, 13, 14), Color("#fff0d2"))
-
-    # Tiny directional marker so movement direction is visible even before sprite animations arrive.
-    var marker := facing.normalized() * 30.0
-    draw_rect(Rect2(marker.x - 3, marker.y - 3, 6, 6), Color("#fff4b8"))
+    if navigation == null or visual == null:
+        return
+    if locked:
+        stop()
+        return
+    var previous := global_position
+    var manual := Input.get_vector("move_left","move_right","move_up","move_down")
+    var budget := speed * minf(delta,0.05)
+    if manual.length_squared()>0.01:
+        route.clear()
+        _move(manual*budget,true)
+    else:
+        while budget>0.01 and not route.is_empty():
+            var target := route[0]
+            var distance := global_position.distance_to(target)
+            if distance<0.5:
+                route.remove_at(0)
+                continue
+            var step := minf(distance,budget)
+            if not _move(global_position.direction_to(target)*step,false):
+                route.clear()
+                break
+            budget -= step
+            if step>=distance:
+                route.remove_at(0)
+    var motion := global_position-previous
+    velocity = motion/maxf(delta,0.001)
+    if motion.length_squared()>0.01:
+        if absf(motion.x)>absf(motion.y):
+            direction = "right" if motion.x>0 else "left"
+        else:
+            direction = "down" if motion.y>0 else "up"
+        visual.play("walk_"+direction)
+    else:
+        visual.play("idle_"+direction)

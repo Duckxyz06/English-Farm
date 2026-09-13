@@ -1,7 +1,22 @@
-[gd_scene format=3]
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/momo.gd" id="1_momo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_momo"]
+size = Vector2(36, 48)
 
 [node name="Momo" type="CharacterBody2D"]
-
-[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(820, 680)
+script = ExtResource("1_momo")
 
 [node name="Collision" type="CollisionShape2D" parent="."]
+position = Vector2(0, 13)
+shape = SubResource("RectangleShape2D_momo")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+limit_left = 0
+limit_top = 0
+limit_right = 2200
+limit_bottom = 1400

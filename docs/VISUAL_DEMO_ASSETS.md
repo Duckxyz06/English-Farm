@@ -50,4 +50,4 @@ wood, stone, farmer hat, red backpack; magenta background.
 ## Xác minh
 
 Workflow Godot Visual Demo phải import không lỗi, vượt kiểm thử gameplay, chụp
-4 màn hình thật bằng Godot với màn hình ảo, rồi mới xuất Windows.
+8 màn hình thật bằng Godot với màn hình ảo, rồi mới xuất Windows.

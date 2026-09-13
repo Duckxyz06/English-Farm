@@ -272,7 +272,7 @@ func refresh() -> void:
             child.queue_free()
         var stage := int(state.plots[i]["stage"])
         if stage==0:
-            var label: Label = ui.label("＋",23)
+            var label: Label = ui.label("+",23)
             label.position = Vector2(-14,-18)
             label.add_theme_color_override("font_color",Color("#dec999"))
             plot_nodes[i].add_child(label)

@@ -107,6 +107,8 @@ func button(text: String, action: Callable) -> Button:
     return result
 
 func show_dialogue(title: String, body_text: String, options: Array, new_mode: String = "message") -> void:
+    notice_seconds = 0
+    notice.hide()
     game.player.locked = true
     game.player.stop()
     game.pending_npc = ""

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "carrot_seed",
+    "name": "Hạt giống cà rốt",
+    "category": "farm"
+  },
+  {
+    "id": "apple",
+    "name": "Táo",
+    "category": "food"
+  },
+  {
+    "id": "vocabulary_book",
+    "name": "Sách từ vựng",
+    "category": "learning"
+  },
+  {
+    "id": "coin",
+    "name": "Xu",
+    "category": "currency"
+  },
+  {
+    "id": "gem",
+    "name": "Đá quý",
+    "category": "premium"
+  }
+]

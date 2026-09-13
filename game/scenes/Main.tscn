@@ -1,0 +1,11 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="Main" type="Node2D"]
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="World"]
+
+[node name="Camera2D" type="Camera2D" parent="World/Player"]
+
+[node name="UI" type="CanvasLayer" parent="."]

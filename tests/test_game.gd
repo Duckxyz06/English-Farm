@@ -67,8 +67,29 @@ func run() -> void:
     for i in range(scene.lessons.size()):
         scene.practice_answer(true)
         scene.practice_question()
-    check(scene.practice_index==10 and scene.state.xp==0,"Reading finishes without repeat rewards")
+    check(scene.practice_index==10 and scene.state.xp==22,"Reading and writing reward only new answers")
+    scene.start_practice("reading")
+    scene.practice_answer(true)
+    check(scene.state.xp==22,"Repeated practice grants no duplicate XP")
     scene.ui.close_dialogue()
+    scene.state.xp = 0
+    scene.ui.open_map()
+    check(scene.ui.map_overlay.visible and scene.player.locked,"Opening map locks player")
+    var map_at: Vector2 = scene.player.position
+    scene.click_world(scene.NPC_POSITIONS["mia"])
+    check(scene.player.route.is_empty(),"Map inspection cannot issue world movement")
+    scene.ui.map_overlay.select_poi("mia")
+    check(not scene.ui.map_overlay.go_button.disabled,"Map routes to store")
+    var map_canvas: Control = scene.ui.map_overlay.canvas
+    var center_world := Vector2(1536,1024)
+    check(map_canvas.map_to_world(map_canvas.world_to_map(center_world)).distance_to(center_world)<0.1,"Map coordinates round trip")
+    map_canvas.set_zoom(2.5)
+    check(map_canvas.map_to_world(map_canvas.world_to_map(center_world)).distance_to(center_world)<0.1,"Zoomed coordinates round trip")
+    scene.ui.map_overlay.go_to_selected()
+    check(not scene.ui.is_modal() and not scene.player.locked and not scene.player.route.is_empty(),"Go button closes map and starts route")
+    check(scene.player.position==map_at,"Map never teleports Momo")
+    scene.player.stop()
+    scene.pending_npc = ""
     scene.lesson()
     var locked_at: Vector2 = scene.player.position
     Input.action_press("move_right")
@@ -141,6 +162,35 @@ func run() -> void:
     malformed = payload.duplicate(true)
     malformed["plots"][0]["stage"] = 99
     check(not restored.restore(malformed,known),"Reject invalid crop stage")
+    var legacy := payload.duplicate(true)
+    for key in ["practice_read","practice_written","community_rewarded"]:
+        legacy.erase(key)
+    check(restored.restore(legacy,known),"Legacy save upgrades without losing coins")
+    var bundle := State.new()
+    bundle.claim_community()
+    check(not bundle.community_rewarded and bundle.coins==500,"Cannot claim locked community reward")
+    for id in known:
+        bundle.learn(id,true,known.size())
+        bundle.record_practice("reading",id)
+        bundle.record_practice("writing",id)
+    bundle.carrots = 3
+    bundle.turn_in_harvest()
+    var bundle_coins: int = bundle.coins
+    bundle.claim_community()
+    check(bundle.community_rewarded and bundle.coins==bundle_coins+100,"All four goals unlock watering upgrade")
+    bundle.claim_community()
+    check(bundle.coins==bundle_coins+100,"Community reward cannot repeat")
+    check(restored.restore(bundle.serialize(scene.SPAWN),known) and restored.community_rewarded,"Watering upgrade and practice persist")
+    scene.state.community_rewarded = true
+    scene.state.plots[0]["stage"] = 1
+    scene.state.plots[1]["stage"] = 1
+    scene.farm(0)
+    check(scene.state.plots[0]["stage"]==2 and scene.state.plots[1]["stage"]==2,"Double watering applies to adjacent planted crop")
+    scene.state.plots[3]["stage"] = 1
+    scene.state.plots[4]["stage"] = 1
+    scene.farm(3)
+    check(scene.state.plots[4]["stage"]==1,"Double watering never crosses a row")
+    scene.state.community_rewarded = false
     var save := "user://automated_test_save.json"
     for suffix in ["",".bak",".tmp"]:
         if FileAccess.file_exists(save+suffix):

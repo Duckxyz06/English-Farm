@@ -5,6 +5,7 @@ const WORLD_SIZE := Vector2(3072, 2048)
 const CELL := 20.0
 var regions: Array[PackedVector2Array] = []
 var blocked: Array[Rect2] = []
+var region_bounds: Array[Rect2] = []
 var grid := AStarGrid2D.new()
 var paths := AStar2D.new()
 var walkable_cells: Array[Vector2i] = []
@@ -66,6 +67,10 @@ func _polygon(points: Array) -> void:
     for point in points:
         polygon.append(Vector2(point[0], point[1]) * SCALE)
     regions.append(polygon)
+    var bounds := Rect2(polygon[0],Vector2.ZERO)
+    for point in polygon:
+        bounds = bounds.expand(point)
+    region_bounds.append(bounds.grow(0.01))
 
 func _rectangle(rect: Rect2) -> void:
     _polygon([[rect.position.x,rect.position.y],[rect.end.x,rect.position.y],[rect.end.x,rect.end.y],[rect.position.x,rect.end.y]])
@@ -74,8 +79,8 @@ func _inside(point: Vector2) -> bool:
     for area in blocked:
         if area.has_point(point):
             return false
-    for polygon in regions:
-        if Geometry2D.is_point_in_polygon(point, polygon):
+    for i in range(regions.size()):
+        if region_bounds[i].has_point(point) and Geometry2D.is_point_in_polygon(point, regions[i]):
             return true
     return false
 
@@ -132,6 +137,8 @@ func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
     var start := _nearest(from,true)
     var end := _nearest(to,false)
     if start.x < 0 or end.x < 0:
+        return PackedVector2Array()
+    if grid.get_point_position(end).distance_to(to)>180:
         return PackedVector2Array()
     var route := paths.get_point_path(_id(start),_id(end))
     if not route.is_empty() and can_travel(route[route.size()-1],to):

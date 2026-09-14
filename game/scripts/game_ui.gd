@@ -1,5 +1,8 @@
 extends CanvasLayer
 const MiniMap = preload("res://game/scripts/minimap.gd")
+const WorldMap = preload("res://game/scripts/world_map.gd")
+var map_overlay: Control
+var minimap: Control
 var game: Node2D
 var hud: Label
 var quest: Label
@@ -26,20 +29,22 @@ func setup(owner_game: Node2D) -> void:
     top_box.add_child(label("Một khởi đầu xanh · Mùa xuân",21))
     quest = label("",19)
     top_box.add_child(quest)
-    var map := MiniMap.new()
-    map.position = Vector2(1035,18)
-    map.size = Vector2(224,149)
-    map.map_texture = game.world_texture
-    map.player = game.player
+    minimap = MiniMap.new()
+    minimap.position = Vector2(1008,8)
+    minimap.size = Vector2(260,194)
+    minimap.map_texture = game.world_texture
+    minimap.player = game.player
     for id in game.NPC_POSITIONS:
-        map.markers.append(game.NPC_POSITIONS[id])
-    map.destination_chosen.connect(game.click_world)
-    add_child(map)
+        minimap.markers.append({"position":game.NPC_POSITIONS[id],"label":id})
+    minimap.map_open_requested.connect(open_map)
+    minimap.tooltip_text = "Bấm để mở bản đồ lớn [B]"
+    add_child(minimap)
     var buttons := HBoxContainer.new()
     buttons.position = Vector2(18,127)
     buttons.add_theme_constant_override("separation",8)
     buttons.add_child(button("Kho [I]",game.inventory))
     buttons.add_child(button("Luyện tập",game.practice_menu))
+    buttons.add_child(button("Mục tiêu [J]",game.journal))
     sound_button = button("Âm thanh [M]",game.toggle_sound)
     buttons.add_child(sound_button)
     add_child(buttons)
@@ -61,6 +66,9 @@ func setup(owner_game: Node2D) -> void:
     content_box.add_theme_constant_override("separation",10)
     dialogue.add_child(content_box)
     dialogue.visible = false
+    map_overlay = WorldMap.new()
+    add_child(map_overlay)
+    map_overlay.setup(self)
 
 func style() -> StyleBoxFlat:
     var result := StyleBoxFlat.new()
@@ -108,6 +116,8 @@ func button(text: String, action: Callable) -> Button:
     return result
 
 func show_dialogue(title: String, body_text: String, options: Array, new_mode: String = "message") -> void:
+    if map_overlay != null:
+        map_overlay.hide()
     notice_seconds = 0
     notice.hide()
     game.player.locked = true
@@ -153,3 +163,22 @@ func _process(delta: float) -> void:
     notice_seconds = maxf(0,notice_seconds-delta)
     if notice != null:
         notice.visible = notice_seconds>0
+
+func is_modal() -> bool:
+    return dialogue.visible or (map_overlay != null and map_overlay.visible)
+
+func open_map() -> void:
+    if map_overlay.visible:
+        close_map()
+        return
+    close_dialogue()
+    game.player.stop()
+    game.player.locked = true
+    game.pending_npc = ""
+    game.pending_plot = -1
+    notice_seconds = 0
+    map_overlay.open()
+
+func close_map() -> void:
+    map_overlay.hide()
+    game.player.locked = dialogue.visible

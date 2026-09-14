@@ -17,6 +17,9 @@ var lesson_rewarded := false
 var harvest_rewarded := false
 var harvested_total := 0
 var plots: Array[Dictionary] = []
+var practice_read: Array[String] = []
+var practice_written: Array[String] = []
+var community_rewarded := false
 
 func _init() -> void:
     for i in range(8):
@@ -135,6 +138,7 @@ func serialize(player_position: Vector2) -> Dictionary:
     return {"version":SAVE_VERSION,"coins":coins,"gems":gems,"xp":xp,"seeds":seeds,"carrots":carrots,
         "capacity":capacity,"hat_owned":hat_owned,"hat_equipped":hat_equipped,"sound_enabled":sound_enabled,
         "learned":learned,"lesson_rewarded":lesson_rewarded,"harvest_rewarded":harvest_rewarded,
+        "practice_read":practice_read,"practice_written":practice_written,"community_rewarded":community_rewarded,
         "harvested_total":harvested_total,"plots":plots.duplicate(true),"position":[player_position.x,player_position.y]}
 
 func restore(data: Dictionary, known_words: Array) -> bool:
@@ -158,6 +162,22 @@ func restore(data: Dictionary, known_words: Array) -> bool:
         clean_learned.append(id)
     if bool(data["lesson_rewarded"]) != (clean_learned.size()==known_words.size()):
         return false
+    var clean_practice: Dictionary = {}
+    for key in ["practice_read","practice_written"]:
+        var entries: Variant = data.get(key,[])
+        if not entries is Array:
+            return false
+        var clean: Array[String] = []
+        for id in entries:
+            if not id is String or id not in known_words or id in clean:
+                return false
+            clean.append(id)
+        clean_practice[key] = clean
+    var community: Variant = data.get("community_rewarded",false)
+    if not community is bool:
+        return false
+    if community and (not data["lesson_rewarded"] or not data["harvest_rewarded"] or clean_practice["practice_read"].size()<5 or clean_practice["practice_written"].size()<5):
+        return false
     var clean_plots: Array[Dictionary] = []
     for plot in data["plots"]:
         if not plot is Dictionary or not (plot.get("stage") is int or plot.get("stage") is float):
@@ -171,6 +191,33 @@ func restore(data: Dictionary, known_words: Array) -> bool:
         set(key,int(data[key]))
     for key in ["hat_owned","hat_equipped","sound_enabled","lesson_rewarded","harvest_rewarded"]:
         set(key,data[key])
+    practice_read = clean_practice["practice_read"]
+    practice_written = clean_practice["practice_written"]
+    community_rewarded = community
     learned = clean_learned
     plots = clean_plots
     return true
+
+func record_practice(kind: String, id: String) -> bool:
+    if kind not in ["reading","writing"]:
+        return false
+    var entries: Array[String] = practice_read if kind=="reading" else practice_written
+    if id in entries:
+        return false
+    entries.append(id)
+    xp += 2
+    return true
+
+func community_ready() -> bool:
+    return lesson_rewarded and harvest_rewarded and practice_read.size()>=5 and practice_written.size()>=5
+
+func claim_community() -> String:
+    if community_rewarded:
+        return "Bạn đã nhận bình tưới đôi. Khi tưới, cây bên phải trong cùng hàng cũng được tưới nếu đang cần nước."
+    if not community_ready():
+        return "Hoàn thành bài của Lily, giao cà rốt cho Tom, luyện đọc 5 từ và viết 5 từ để nhận bình tưới đôi."
+    community_rewarded = true
+    coins += 100
+    xp += 40
+    return "Dự án Vườn học tập hoàn thành! +100 xu · +40 XP.
+Đã mở bình tưới đôi: tưới thêm cây bên phải trong cùng hàng."

@@ -28,6 +28,7 @@ var practice_index := 0
 var practice_kind := "reading"
 var practice_input: LineEdit
 var save_elapsed := 0.0
+var hint_elapsed := 0.0
 var music: AudioStreamPlayer
 var effects: AudioStreamPlayer
 @onready var player = $Momo
@@ -101,7 +102,7 @@ func _process(delta: float) -> void:
     if save_elapsed>=15:
         save_elapsed = 0
         save_progress()
-    if ui.dialogue.visible:
+    if ui.is_modal():
         return
     if Input.get_vector("move_left","move_right","move_up","move_down").length_squared()>0.01:
         pending_npc = ""
@@ -114,15 +115,26 @@ func _process(delta: float) -> void:
         pending_plot = -1
         player.stop()
         farm(index)
+    hint_elapsed += delta
+    if hint_elapsed<0.1:
+        return
+    hint_elapsed = 0.0
     var near := nearby()
     ui.hint.text = near["hint"] if not near.is_empty() else "Bấm để đi  ·  WASD di chuyển  ·  E tương tác  ·  I mở kho"
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and not event.echo:
         if event.keycode==KEY_ESCAPE:
+            ui.close_map()
             ui.close_dialogue()
         elif ui.mode=="writing":
             return
+        elif event.keycode==KEY_B:
+            ui.open_map()
+        elif ui.map_overlay.visible:
+            return
+        elif event.keycode==KEY_J:
+            journal()
         elif event.keycode==KEY_I:
             if ui.dialogue.visible:
                 ui.close_dialogue()
@@ -149,11 +161,11 @@ func _unhandled_input(event: InputEvent) -> void:
             var number := int(event.keycode)-KEY_1
             if number>=0 and number<ui.actions.size():
                 ui.actions[number].call()
-    if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT and not ui.dialogue.visible:
+    if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT and not ui.is_modal():
         click_world(get_global_mouse_position())
 
 func click_world(point: Vector2) -> void:
-    if ui.dialogue.visible:
+    if ui.is_modal():
         return
     pending_npc = ""
     pending_plot = -1
@@ -191,6 +203,9 @@ func farm(index: int) -> void:
     var result: Dictionary = state.farm(index)
     ui.toast(result["message"],4)
     if result["ok"]:
+        if result["action"]=="water" and state.community_rewarded and index%4<3 and int(state.plots[index+1]["stage"])==1:
+            state.farm(index+1)
+            ui.toast("Bình tưới đôi: đã tưới cả 2 cây trong cùng hàng!",4)
         play_sound(String(result["action"]))
         refresh()
         save_progress()
@@ -350,7 +365,7 @@ func stop_audio() -> void:
 
 func practice_menu() -> void:
     ui.show_dialogue("Lily · Góc luyện tập","Luyện đọc câu trong nông trại hoặc tự gõ từ tiếng Anh.
-Bạn có thể thử lại; phần ôn tập không cộng thưởng lặp.",[
+Bạn có thể thử lại; mỗi từ đúng mới cho 2 XP, không cộng thưởng lặp.",[
         {"text":"Đọc hiểu câu tiếng Anh","action":start_practice.bind("reading")},
         {"text":"Viết từ tiếng Anh","action":start_practice.bind("writing")}])
 
@@ -397,9 +412,38 @@ func practice_answer(correct: bool) -> void:
         ui.toast("Chưa đúng. Bạn thử lại nhé!",3)
         return
     var item: Dictionary = lessons[practice_index]
+    var newly_practiced := state.record_practice(practice_kind,String(item["id"]))
+    refresh()
+    save_progress()
     var translations := ["Một củ cà rốt có màu cam.","Hãy tưới cây.","Hãy thu hoạch cà rốt.","Hãy gieo một hạt giống.","Tôi thích táo.","Hãy đọc một quyển sách.","Con chim ở trên cây.","Xin chào, Lily!","Cảm ơn chú, Tom!","Cây cần nước để lớn lên."]
     practice_index += 1
     ui.show_dialogue("Chính xác!","%s = %s
 %s
-%s" % [item["word"],item["meaning"],item["example"],translations[practice_index-1]],[{"text":"Câu tiếp theo","action":practice_question}],"practice_feedback")
+%s" % [item["word"],item["meaning"],item["example"],translations[practice_index-1]+("\n+2 XP · Đã ghi vào sổ mục tiêu." if newly_practiced else "\nĐã ôn lại từ đã biết.")],[{"text":"Câu tiếp theo","action":practice_question}],"practice_feedback")
     play_sound("success")
+
+func journal() -> void:
+    var lesson_status := "%d/10 từ" % state.learned.size()
+    var farm_status := "Đã giao" if state.harvest_rewarded else "%d/3 củ" % mini(state.carrots,3)
+    var text := "TỪNG BƯỚC NHỎ
+Lily: %s → 50 xu · Tom: %s → 30 xu + 20 XP
+Đọc: %d/5 từ · Viết: %d/5 từ (mỗi từ mới: 2 XP)
+
+DỰ ÁN VƯỜN HỌC TẬP
+Hoàn thành cả 4 mục: 100 xu + 40 XP + bình tưới đôi.
+Bình tưới đôi giúp tưới 2 cây liền nhau trong cùng hàng." % [lesson_status,farm_status,mini(state.practice_read.size(),5),mini(state.practice_written.size(),5)]
+    var options: Array = [
+        {"text":"Xem địa điểm trên bản đồ","action":ui.open_map},
+        {"text":"Luyện đọc / viết","action":practice_menu}]
+    if state.community_ready() or state.community_rewarded:
+        options.append({"text":"Đã mở bình tưới đôi" if state.community_rewarded else "Nhận phần thưởng dự án","action":claim_community})
+    ui.show_dialogue("Sổ mục tiêu · Chọn việc bạn thích",text,options,"journal")
+
+func claim_community() -> void:
+    var before: bool = state.community_rewarded
+    var message: String = state.claim_community()
+    refresh()
+    save_progress()
+    if not before and state.community_rewarded:
+        play_sound("success")
+    ui.show_dialogue("Vườn học tập",message,[{"text":"Về sổ mục tiêu","action":journal}])

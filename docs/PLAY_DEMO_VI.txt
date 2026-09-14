@@ -1,0 +1,34 @@
+ENGLISH FARM — BẢN DEMO HÌNH ẢNH
+
+Chạy trên Windows 64-bit:
+1. Giải nén toàn bộ gói tải về.
+2. Mở EnglishFarm.exe. Giữ EnglishFarm.pck cùng thư mục.
+
+ĐIỀU KHIỂN
+Chuột trái: chọn nơi đến; bấm nhân vật hoặc luống cây để tự đi và tương tác.
+W A S D: di chuyển, hủy đường đi bằng chuột.
+E: nói chuyện, gieo hạt, tưới nước, thu hoạch; tiếp tục sau đáp án đúng.
+1–5: chọn nút trong cửa sổ đang mở.
+I: mở kho. Esc: đóng cửa sổ. M: bật/tắt âm thanh. F11: toàn màn hình.
+Bấm bản đồ nhỏ để chọn nơi đến.
+
+MỘT VÒNG CHƠI
+Momo bắt đầu trước căn nhà ở góc trái dưới.
+Gặp Lily ở trước ngôi trường mái xanh để học 10 từ. Mỗi từ đúng cho 2 XP.
+Hoàn thành 10 từ nhận thêm 50 xu, chỉ một lần.
+Đi vào ruộng qua khoảng trống ở cạnh dưới. Có 8 luống tương tác.
+Gieo hạt, tưới, chờ 12 giây, rồi thu hoạch. Thời gian trồng trong demo đã rút ngắn.
+Đem đủ 3 cà rốt tới Tom, phía dưới bên phải ruộng, nhận 30 xu và 20 XP.
+Gặp Mia trước kho mái đỏ, góc phải trên, để mua giống, bán cà rốt hoặc nâng kho.
+Đổi 10 xu thành 1 ngọc; mũ nông dân giá 5 ngọc. Có thể đội/cất mũ ở Mia.
+
+TIẾN ĐỘ
+Game tự lưu khi thay đổi vật phẩm/bài học và mỗi 15 giây.
+Tệp lưu nằm trong thư mục dữ liệu người dùng của Godot/English Farm.
+Có bản .bak để khôi phục khi tệp chính không đọc được.
+Âm thanh gồm giai điệu tổng hợp mới và hiệu ứng gieo/tưới/thu hoạch/trả lời đúng.
+
+PHẠM VI
+Đây là một khu nông trại có thể thử các hệ thống trên.
+Chưa có chuyển mùa, các vùng rừng/núi/biển/đảo, nội thất tòa nhà, ghi âm/chấm phát âm.
+Các tài nguyên được tạo mới theo ảnh tham chiếu, chưa phải bản sao trùng từng pixel.

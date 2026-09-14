@@ -1,0 +1,132 @@
+[
+  {
+    "id": "farm_001",
+    "word": "carrot",
+    "meaning": "cà rốt",
+    "example": "A carrot is orange.",
+    "choices": [
+      "Cà rốt",
+      "Quả táo",
+      "Quyển sách"
+    ],
+    "answer": 0,
+    "level": 1
+  },
+  {
+    "id": "farm_002",
+    "word": "water (verb)",
+    "meaning": "tưới nước",
+    "example": "Water the plants.",
+    "choices": [
+      "Thu hoạch",
+      "Tưới nước",
+      "Mua"
+    ],
+    "answer": 1,
+    "level": 1
+  },
+  {
+    "id": "farm_003",
+    "word": "harvest",
+    "meaning": "thu hoạch",
+    "example": "Harvest the carrots.",
+    "choices": [
+      "Gieo hạt",
+      "Đọc sách",
+      "Thu hoạch"
+    ],
+    "answer": 2,
+    "level": 1
+  },
+  {
+    "id": "farm_004",
+    "word": "seed",
+    "meaning": "hạt giống",
+    "example": "Plant a seed.",
+    "choices": [
+      "Hạt giống",
+      "Cây cầu",
+      "Cửa hàng"
+    ],
+    "answer": 0,
+    "level": 1
+  },
+  {
+    "id": "farm_005",
+    "word": "apple",
+    "meaning": "quả táo",
+    "example": "I like apples.",
+    "choices": [
+      "Cà rốt",
+      "Quả táo",
+      "Viên đá"
+    ],
+    "answer": 1,
+    "level": 1
+  },
+  {
+    "id": "farm_006",
+    "word": "book",
+    "meaning": "quyển sách",
+    "example": "Read a book.",
+    "choices": [
+      "Bình tưới",
+      "Cây",
+      "Quyển sách"
+    ],
+    "answer": 2,
+    "level": 1
+  },
+  {
+    "id": "farm_007",
+    "word": "tree",
+    "meaning": "cây thân gỗ",
+    "example": "The bird is in the tree.",
+    "choices": [
+      "Cây thân gỗ",
+      "Cánh đồng",
+      "Cái giỏ"
+    ],
+    "answer": 0,
+    "level": 1
+  },
+  {
+    "id": "farm_008",
+    "word": "hello",
+    "meaning": "xin chào",
+    "example": "Hello, Lily!",
+    "choices": [
+      "Tạm biệt",
+      "Xin chào",
+      "Cảm ơn"
+    ],
+    "answer": 1,
+    "level": 1
+  },
+  {
+    "id": "farm_009",
+    "word": "thank you",
+    "meaning": "cảm ơn",
+    "example": "Thank you, Tom!",
+    "choices": [
+      "Làm ơn",
+      "Xin lỗi",
+      "Cảm ơn"
+    ],
+    "answer": 2,
+    "level": 1
+  },
+  {
+    "id": "farm_010",
+    "word": "grow",
+    "meaning": "lớn lên / phát triển",
+    "example": "Plants need water to grow.",
+    "choices": [
+      "Lớn lên / phát triển",
+      "Đóng cửa",
+      "Đi ngủ"
+    ],
+    "answer": 0,
+    "level": 1
+  }
+]

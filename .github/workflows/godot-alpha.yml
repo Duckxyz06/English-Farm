@@ -1,18 +1,24 @@
-name: Godot Alpha Build
+name: Godot Visual Demo
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "codex/visual-farm-demo"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  smoke-and-build:
+  test-and-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: barichello/godot-ci:4.3
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup export templates
         run: |
@@ -22,20 +28,59 @@ jobs:
           elif [ -d /root/.local/share/godot/templates/4.3.stable ]; then
             cp -r /root/.local/share/godot/templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
           else
-            echo "Godot export templates were not found in the CI image."
             exit 1
           fi
 
-      - name: Import and parse project
-        run: godot --headless --path . --editor --quit
-
-      - name: Export Windows build
+      - name: Import project and fail on parse errors
         run: |
-          mkdir -p build/windows
-          godot --headless --path . --export-release "Windows Desktop" "build/windows/EnglishFarm.exe"
+          set -o pipefail
+          godot --headless --path . --editor --quit 2>&1 | tee import.log
+          ! grep -Eq 'SCRIPT ERROR:|Parse Error:|ERROR:' import.log
 
-      - name: Upload Windows alpha
+      - name: Test gameplay in Godot
+        run: |
+          set -o pipefail
+          timeout 120 godot --headless --verbose --path . --script tests/test_game.gd 2>&1 | tee test.log
+          grep -q 'ENGLISH_FARM_TESTS_PASSED' test.log
+          ! grep -Eq 'SCRIPT ERROR:|Parse Error:|ERROR:' test.log
+
+      - name: Install virtual display for visual checks
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq xvfb xauth libgl1-mesa-dri
+
+      - name: Capture actual game screens
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -o pipefail
+          timeout 90 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --audio-driver Dummy --rendering-driver opengl3 --script tests/capture.gd 2>&1 | tee capture.log
+          grep -q 'ENGLISH_FARM_SCREENSHOTS_PASSED' capture.log
+          ! grep -Eq 'SCRIPT ERROR:|Parse Error:|ERROR:' capture.log
+
+      - name: Export Windows demo
+        run: |
+          set -o pipefail
+          mkdir -p build/windows
+          godot --headless --path . --export-release "Windows Desktop" "build/windows/EnglishFarm.exe" 2>&1 | tee export.log
+          ! grep -Eq 'SCRIPT ERROR:|Parse Error:|ERROR:' export.log
+          cp docs/PLAY_DEMO_VI.txt build/windows/HUONG_DAN.txt
+
+      - name: Upload Windows demo
         uses: actions/upload-artifact@v4
         with:
-          name: EnglishFarm-Windows-Alpha
+          name: EnglishFarm-Windows-Visual-Demo
           path: build/windows/
+          if-no-files-found: error
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: EnglishFarm-Verification
+          path: |
+            test-output/
+            import.log
+            test.log
+            capture.log
+            export.log

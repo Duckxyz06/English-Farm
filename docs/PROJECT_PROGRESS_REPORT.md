@@ -1,5 +1,7 @@
 # English Farm — Project Progress Report
 
+> Historical prototype planning. For the implemented Visual Demo and verified Windows build, see [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) and [README](../README.md).
+
 ## Current Status
 
 Project: English Farm

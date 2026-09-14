@@ -56,6 +56,19 @@ func run() -> void:
             if scene.player.route.is_empty():
                 break
         check(scene.player.position.distance_to(goal)<1.0,"Momo reaches %s; stopped at %s" % [goal,scene.player.position])
+    scene.start_practice("writing")
+    scene.submit_practice("wrong")
+    check(scene.practice_index==0,"Wrong written answer does not advance")
+    scene.submit_practice("  CARROT  ")
+    check(scene.practice_index==1,"Writing accepts normalized correct answer")
+    scene.submit_practice("carrot")
+    check(scene.practice_index==1,"Repeated submission cannot skip a question")
+    scene.start_practice("reading")
+    for i in range(scene.lessons.size()):
+        scene.practice_answer(true)
+        scene.practice_question()
+    check(scene.practice_index==10 and scene.state.xp==0,"Reading finishes without repeat rewards")
+    scene.ui.close_dialogue()
     scene.lesson()
     var locked_at: Vector2 = scene.player.position
     Input.action_press("move_right")

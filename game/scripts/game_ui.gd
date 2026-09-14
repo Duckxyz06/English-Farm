@@ -39,6 +39,7 @@ func setup(owner_game: Node2D) -> void:
     buttons.position = Vector2(18,127)
     buttons.add_theme_constant_override("separation",8)
     buttons.add_child(button("Kho [I]",game.inventory))
+    buttons.add_child(button("Luyện tập",game.practice_menu))
     sound_button = button("Âm thanh [M]",game.toggle_sound)
     buttons.add_child(sound_button)
     add_child(buttons)

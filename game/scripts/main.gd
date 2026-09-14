@@ -22,6 +22,9 @@ var ui: CanvasLayer
 var pending_npc := ""
 var pending_plot := -1
 var current_lesson: Dictionary = {}
+var practice_index := 0
+var practice_kind := "reading"
+var practice_input: LineEdit
 var save_elapsed := 0.0
 var music: AudioStreamPlayer
 var effects: AudioStreamPlayer
@@ -113,6 +116,8 @@ func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and not event.echo:
         if event.keycode==KEY_ESCAPE:
             ui.close_dialogue()
+        elif ui.mode=="writing":
+            return
         elif event.keycode==KEY_I:
             if ui.dialogue.visible:
                 ui.close_dialogue()
@@ -206,7 +211,7 @@ func lesson() -> void:
             current_lesson = item
             break
     if current_lesson.is_empty():
-        ui.show_dialogue("Lily · Bài học đầu tiên","Momo đã học đủ 10 từ! +50 xu đã được cộng một lần.\nDùng “seed”, “water”, “harvest” khi chăm ruộng nhé.",[{"text":"Ôn lại 10 từ","action":known_words}])
+        ui.show_dialogue("Lily · Bài học đầu tiên","Momo đã học đủ 10 từ! +50 xu đã được cộng một lần.\nDùng “seed”, “water”, “harvest” khi chăm ruộng nhé.",[{"text":"Ôn lại 10 từ","action":known_words},{"text":"Luyện đọc và viết","action":practice_menu}])
         return
     var options: Array = []
     for i in range(current_lesson["choices"].size()):
@@ -334,3 +339,59 @@ func stop_audio() -> void:
     if effects != null:
         effects.stop()
         effects.stream = null
+
+func practice_menu() -> void:
+    ui.show_dialogue("Lily · Góc luyện tập","Luyện đọc câu trong nông trại hoặc tự gõ từ tiếng Anh.
+Bạn có thể thử lại; phần ôn tập không cộng thưởng lặp.",[
+        {"text":"Đọc hiểu câu tiếng Anh","action":start_practice.bind("reading")},
+        {"text":"Viết từ tiếng Anh","action":start_practice.bind("writing")}])
+
+func start_practice(kind: String) -> void:
+    practice_kind = kind
+    practice_index = 0
+    practice_question()
+
+func practice_question() -> void:
+    if practice_index>=lessons.size():
+        ui.show_dialogue("Hoàn thành luyện tập","Bạn đã hoàn thành %d câu. Hãy dùng những từ này khi chăm nông trại!" % lessons.size(),[{"text":"Chọn bài luyện khác","action":practice_menu}])
+        return
+    var item: Dictionary = lessons[practice_index]
+    var title := "Luyện %s · %d/%d" % ["đọc" if practice_kind=="reading" else "viết",practice_index+1,lessons.size()]
+    if practice_kind=="reading":
+        var options: Array = []
+        for i in range(item["choices"].size()):
+            options.append({"text":item["choices"][i],"action":practice_answer.bind(i==int(item["answer"]))})
+        ui.show_dialogue(title,"%s
+Trong câu trên, “%s” có nghĩa là gì?" % [item["example"],item["word"]],options,"reading")
+    else:
+        ui.show_dialogue(title,"Viết bằng tiếng Anh: %s
+Nhấn Enter để kiểm tra." % item["meaning"],[],"writing")
+        practice_input = LineEdit.new()
+        practice_input.placeholder_text = "Gõ từ hoặc cụm từ tiếng Anh…"
+        practice_input.custom_minimum_size = Vector2(700,44)
+        practice_input.max_length = 80
+        practice_input.text_submitted.connect(submit_practice)
+        ui.content_box.add_child(practice_input)
+        ui.content_box.move_child(practice_input,2)
+        ui.content_box.add_child(ui.button("Kiểm tra",func(): submit_practice(practice_input.text)))
+        practice_input.grab_focus()
+
+func submit_practice(value: String) -> void:
+    if ui.mode!="writing":
+        return
+    var expected := String(lessons[practice_index]["word"]).replace(" (verb)","")
+    practice_answer(value.strip_edges().to_lower()==expected.to_lower())
+
+func practice_answer(correct: bool) -> void:
+    if ui.mode not in ["reading","writing"]:
+        return
+    if not correct:
+        ui.toast("Chưa đúng. Bạn thử lại nhé!",3)
+        return
+    var item: Dictionary = lessons[practice_index]
+    var translations := ["Một củ cà rốt có màu cam.","Hãy tưới cây.","Hãy thu hoạch cà rốt.","Hãy gieo một hạt giống.","Tôi thích táo.","Hãy đọc một quyển sách.","Con chim ở trên cây.","Xin chào, Lily!","Cảm ơn chú, Tom!","Cây cần nước để lớn lên."]
+    practice_index += 1
+    ui.show_dialogue("Chính xác!","%s = %s
+%s
+%s" % [item["word"],item["meaning"],item["example"],translations[practice_index-1]],[{"text":"Câu tiếp theo","action":practice_question}],"practice_feedback")
+    play_sound("success")

@@ -7,6 +7,7 @@ var regions: Array[PackedVector2Array] = []
 var blocked: Array[Rect2] = []
 var grid := AStarGrid2D.new()
 var paths := AStar2D.new()
+var walkable_cells: Array[Vector2i] = []
 
 func _init() -> void:
     # Coordinates were traced against farm_spring.png (1536 x 1024).
@@ -22,6 +23,12 @@ func _init() -> void:
     _polygon([[729,827],[800,827],[821,894],[819,943],[749,940],[724,893]])
     _polygon([[979,561],[1069,590],[1171,605],[1251,608],[1308,611],[1330,639],[1307,668],[1245,665],[1223,643],[1140,642],[1059,634],[1004,608]])
     _rectangle(Rect2(1255,651,49,58))
+    # Visible paths omitted by the original narrow navigation trace.
+    _polygon([[151,140],[190,139],[216,181],[232,248],[273,306],[308,341],[289,379],[246,342],[204,288],[184,229],[161,192]])
+    _rectangle(Rect2(59,139,125,30))
+    _polygon([[1287,607],[1385,601],[1448,630],[1470,675],[1450,699],[1391,678],[1352,655],[1300,651]])
+    _polygon([[945,850],[999,838],[1046,874],[1094,905],[1181,914],[1270,913],[1373,920],[1380,954],[1230,956],[1101,950],[1021,929],[981,895],[930,896]])
+    _polygon([[603,839],[967,839],[973,866],[819,877],[739,877],[658,870],[603,862]])
     for rect in [Rect2(664,317,191,167),Rect2(607,448,61,48),Rect2(861,448,58,49),Rect2(678,484,46,51),Rect2(807,483,45,49)]:
         blocked.append(Rect2(rect.position * SCALE, rect.size * SCALE).grow(10))
     grid.region = Rect2i(0,0,ceili(WORLD_SIZE.x/CELL),ceili(WORLD_SIZE.y/CELL))
@@ -37,6 +44,7 @@ func _init() -> void:
             grid.set_point_solid(cell, not is_walkable(grid.get_point_position(cell),12.0))
             if not grid.is_point_solid(cell):
                 paths.add_point(_id(cell),grid.get_point_position(cell))
+                walkable_cells.append(cell)
     # A grid can connect two safe centers across a concave path edge. Validate
     # each entire connection using the same footprint as actual movement.
     for y in range(grid.region.size.y):
@@ -85,21 +93,42 @@ func can_travel(from: Vector2, to: Vector2, clearance: float = 8.0) -> bool:
     return true
 
 func _nearest(point: Vector2, connect: bool) -> Vector2i:
+    # Normal clicks resolve locally; do not scan the whole world or test long
+    # candidate segments before discovering a closer grid cell.
+    var origin := Vector2i(floori(point.x/CELL),floori(point.y/CELL))
     var best := Vector2i(-1,-1)
     var distance := INF
-    for y in range(grid.region.size.y):
-        for x in range(grid.region.size.x):
-            var cell := Vector2i(x,y)
-            if grid.is_point_solid(cell):
-                continue
-            var center := grid.get_point_position(cell)
-            var d := center.distance_squared_to(point)
-            if d < distance and (not connect or can_travel(point,center)):
-                best = cell
-                distance = d
+    for radius in range(4):
+        for y in range(origin.y-radius,origin.y+radius+1):
+            for x in range(origin.x-radius,origin.x+radius+1):
+                if radius>0 and absi(x-origin.x)!=radius and absi(y-origin.y)!=radius:
+                    continue
+                var cell := Vector2i(x,y)
+                if not grid.region.has_point(cell) or grid.is_point_solid(cell):
+                    continue
+                var center := grid.get_point_position(cell)
+                var d := center.distance_squared_to(point)
+                if d<distance and (not connect or can_travel(point,center)):
+                    best = cell
+                    distance = d
+        if best.x>=0 and sqrt(distance)<float(radius)*CELL:
+            return best
+    if best.x>=0:
+        return best
+    if connect:
+        return best
+    for cell in walkable_cells:
+        var d := grid.get_point_position(cell).distance_squared_to(point)
+        if d<distance:
+            distance = d
+            best = cell
     return best
 
 func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
+    if not from.is_finite() or not to.is_finite():
+        return PackedVector2Array()
+    if from.distance_to(to)<240 and can_travel(from,to):
+        return PackedVector2Array([to])
     var start := _nearest(from,true)
     var end := _nearest(to,false)
     if start.x < 0 or end.x < 0:

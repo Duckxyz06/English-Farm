@@ -4,8 +4,16 @@ var map_texture: Texture2D
 var player: Node2D
 var markers: Array[Vector2] = []
 
-func _process(_delta: float) -> void:
-    queue_redraw()
+var last_position := Vector2.INF
+var redraw_elapsed := 0.0
+
+func _process(delta: float) -> void:
+    redraw_elapsed += delta
+    if redraw_elapsed>=0.1 and is_instance_valid(player):
+        redraw_elapsed = 0.0
+        if player.global_position!=last_position:
+            last_position = player.global_position
+            queue_redraw()
 
 func _draw() -> void:
     if map_texture == null:

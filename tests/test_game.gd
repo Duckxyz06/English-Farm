@@ -33,6 +33,12 @@ func run() -> void:
     for id in scene.NPC_POSITIONS:
         goals.append(scene.NPC_POSITIONS[id])
     goals.append_array(scene.plot_positions)
+    for point in [Vector2(110,154),Vector2(207,229),Vector2(1420,654),Vector2(1240,934),Vector2(635,852)]:
+        goals.append(point*2.0)
+    var path_started := Time.get_ticks_usec()
+    for i in range(100):
+        scene.navigation.find_path(scene.SPAWN,scene.NPC_POSITIONS["mia"])
+    print("NAVIGATION_100_CLICKS_MS=",(Time.get_ticks_usec()-path_started)/1000.0)
     for goal in goals:
         var route: PackedVector2Array = scene.navigation.find_path(scene.SPAWN,goal)
         check(not route.is_empty(),"Route to "+str(goal))

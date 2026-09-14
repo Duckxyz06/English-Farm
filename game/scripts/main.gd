@@ -18,6 +18,8 @@ var world_texture: Texture2D
 var npc_visuals: Dictionary = {}
 var plot_nodes: Array[Node2D] = []
 var plot_positions: Array[Vector2] = []
+var displayed_stages: Array[int] = []
+var sound_streams: Dictionary = {}
 var ui: CanvasLayer
 var pending_npc := ""
 var pending_plot := -1
@@ -46,6 +48,7 @@ func _ready() -> void:
         node.z_index = int(node.position.y)
         add_child(node)
         plot_nodes.append(node)
+        displayed_stages.append(-1)
     for id in NPC_POSITIONS:
         var column: int = ["lily","tom","mia"].find(id)
         var node := Node2D.new()
@@ -73,6 +76,8 @@ func _ready() -> void:
     music.volume_db = -13
     add_child(music)
     music.finished.connect(music.play)
+    for sound_name in ["plant","water","harvest","success"]:
+        sound_streams[sound_name] = load("res://game/assets/audio/"+sound_name+".wav")
     effects = AudioStreamPlayer.new()
     effects.volume_db = -8
     add_child(effects)
@@ -272,10 +277,13 @@ func refresh() -> void:
     for id in npc_visuals:
         npc_visuals[id]["marker"].text = "✓" if (id=="lily" and state.lesson_rewarded) or (id=="tom" and state.harvest_rewarded) else ("…" if id=="mia" else "!")
     for i in range(plot_nodes.size()):
+        var stage := int(state.plots[i]["stage"])
+        if displayed_stages[i]==stage:
+            continue
+        displayed_stages[i] = stage
         for child in plot_nodes[i].get_children():
             plot_nodes[i].remove_child(child)
             child.queue_free()
-        var stage := int(state.plots[i]["stage"])
         if stage==0:
             var label: Label = ui.label("+",23)
             label.position = Vector2(-14,-18)
@@ -291,7 +299,7 @@ func refresh() -> void:
 
 func play_sound(name: String) -> void:
     if state.sound_enabled:
-        effects.stream = load("res://game/assets/audio/"+name+".wav")
+        effects.stream = sound_streams.get(name)
         effects.play()
 
 func toggle_sound() -> void:

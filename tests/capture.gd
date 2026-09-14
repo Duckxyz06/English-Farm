@@ -44,6 +44,12 @@ func capture() -> void:
     scene.refresh()
     scene.known_words()
     await shot(scene,"test-output/08-vocabulary.png",Vector2(805,635))
+    scene.start_practice("reading")
+    await shot(scene,"test-output/09-reading.png",Vector2(805,635))
+    scene.start_practice("writing")
+    await shot(scene,"test-output/10-writing.png",Vector2(805,635))
+    scene.submit_practice("carrot")
+    await shot(scene,"test-output/11-writing-feedback.png",Vector2(805,635))
     scene.stop_audio()
     await create_timer(0.15).timeout
     scene.queue_free()
